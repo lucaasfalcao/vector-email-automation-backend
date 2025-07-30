@@ -7,26 +7,31 @@ from email.mime.text import MIMEText
 from email.mime.application import MIMEApplication
 
 
-def create_email(recipient: str) -> str:
+def create_email(recipients: list[str]) -> str:
     """Create an email with an attachment and send it via Gmail."""
 
     with open('services/gmail/email_body.html', 'r', encoding='utf-8') as file:
-        corpo_email = file.read()
+        email_body = file.read()
 
     sender = os.getenv('GMAIL_SENDER')
     gmail_key = os.getenv('GMAIL_KEY')
 
     message = MIMEMultipart()
     message['From'] = sender
-    message['To'] = recipient
+    message['To'] = ', '.join(recipients)
     message['Subject'] = 'Manuais de digitação - Sistema Vector'
-    message.attach(MIMEText(corpo_email, 'html'))
+    message.attach(MIMEText(email_body, 'html'))
 
-    caminho_arquivo = 'static/files/Manuais.pdf'
-    with open(caminho_arquivo, 'rb') as file:
-        anexo = MIMEApplication(file.read(), Name=os.path.basename(caminho_arquivo))
-        anexo['Content-Disposition'] = f'attachment; filename="{os.path.basename(caminho_arquivo)}"'
-        message.attach(anexo)
+    file_paths = [
+        'static/files/Manuais.pdf',
+        'static/files/Tutorial.mp4'
+    ]
+    for file_path in file_paths:
+        with open(file_path, 'rb') as file:
+            attachment = MIMEApplication(file.read(), Name=os.path.basename(file_path))
+            attachment['Content-Disposition'] = f'attachment; filename="{
+                os.path.basename(file_path)}"'
+            message.attach(attachment)
 
     with smtplib.SMTP('smtp.gmail.com', 587) as server:
         server.starttls()

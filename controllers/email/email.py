@@ -1,5 +1,6 @@
 """Controller for Email"""
 
+from fastapi import Body
 from services.gmail import gmail as gmail_service
 from .config import EMAIL, router
 
@@ -10,6 +11,11 @@ from .config import EMAIL, router
     tags=[EMAIL['name']],
     response_model=str,
 )
-def send_email(recipient: str):
+def send_email(
+    recipients: list[str] = Body(
+        description='List of email recipients',
+        example=['email@gmail.com']
+    ),
+) -> str:
     """Send an email to the client"""
-    return gmail_service.create_email(recipient=recipient)
+    return gmail_service.create_email(recipients=recipients)
